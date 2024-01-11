@@ -8,6 +8,7 @@ import { name as ChatName, init as defaultChat } from './apps/Chat';
 import { name as ClockName, init as defaultClock } from './apps/Clock';
 import { name as CobrowseName, init as defaultCobrowse } from './apps/Cobrowse';
 import { name as CounterName, init as defaultCounter } from './apps/Counter';
+import { name as CounterPracticeName, init as defaultCounterPractice } from './apps/CounterPractice';
 import { name as DeepZoomImageName, init as defaultDeepZoomImage } from './apps/DeepZoomImage';
 import { name as EChartsViewerName, init as defaultEChartsViewer } from './apps/EChartsViewer';
 import { name as GLTFViewerName, init as defaultGLTFViewer } from './apps/GLTFViewer';
@@ -41,6 +42,7 @@ export const initialValues = {
   [ClockName]: defaultClock,
   [CobrowseName]: defaultCobrowse,
   [CounterName]: defaultCounter,
+  [CounterPracticeName]: defaultCounterPractice,
   [DeepZoomImageName]: defaultDeepZoomImage,
   [EChartsViewerName]: defaultEChartsViewer,
   [GLTFViewerName]: defaultGLTFViewer,
