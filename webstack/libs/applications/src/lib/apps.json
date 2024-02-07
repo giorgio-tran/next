@@ -19,7 +19,9 @@
     "PDFResult",
     "PDFViewer",
     "PluginApp",
+    "Poll",
     "RTCChat",
+    "SAGELINK",
     "SageCell",
     "Seer",
     "SensorOverview",
@@ -30,5 +32,5 @@
     "VideoViewer",
     "WebpageLink",
     "Webview",
-    "Poll"
+    "WritingTest"
 ]
