@@ -69,7 +69,9 @@ function AppComponent(props: App): JSX.Element {
     originalAppCoordinates.current = app.data.position;
     console.log('originalAppCoordinates', originalAppCoordinates.current);
     console.log('app', app);
-    update(app._id, { position: { x: props.data.position.x + props.data.size.width + 2, y: props.data.position.y, z: props.data.position.z } });
+    update(app._id, {
+      position: { x: props.data.position.x, y: props.data.position.y + props.data.size.height + 2, z: props.data.position.z },
+    });
   };
 
   const restoreOriginalCoordinates = (app: App) => {
@@ -102,59 +104,81 @@ function AppComponent(props: App): JSX.Element {
             Submit
           </Button>
         </form> */}
-        <Box>All Items On board</Box>
-        <Box display="flex" flexDirection="column" flexWrap="wrap">
-          {apps.map((app) => {
-            return (
-              <Box
-                key={app._id}
-                border="1px solid"
-                padding="2"
-                marginY="2"
-                onMouseEnter={() => {
-                  moveNextToSAGELINK(app);
-                }}
-                onMouseLeave={() => {
-                  restoreOriginalCoordinates(app);
+        <Box display="flex" height="100%">
+          <Box height="100%">
+            <Box>All Items On board</Box>
+            <Box
+              display="flex"
+              flexDirection="column"
+              width={props.data.size.width / 2}
+              height={props.data.size.height}
+              overflowY="auto"
+              paddingBottom="20"
+            >
+              {apps
+                .filter((app) => app._id !== props._id)
+                .map((app) => {
+                  return (
+                    <Box
+                      key={app._id}
+                      border="1px solid"
+                      padding="2"
+                      marginY="2"
+                      onMouseEnter={() => {
+                        moveNextToSAGELINK(app);
+                      }}
+                      onMouseLeave={() => {
+                        restoreOriginalCoordinates(app);
+                      }}
+                    >
+                      <div>
+                        {app._id} - {app.data.type}
+                      </div>
+                      <hr />
+                      <Box display="flex" flexWrap="wrap" gap="1">
+                        {Object.entries(app.data.state).map((state) => {
+                          return (
+                            <Button
+                              onClick={() => {
+                                setStateController([...stateController, { _id: app._id, stateKey: state[0], stateValue: state[1] }]);
+                              }}
+                            >
+                              {state[0]}: {JSON.stringify(state[1])}
+                            </Button>
+                          );
+                        })}
+                      </Box>
+                    </Box>
+                  );
+                })}
+            </Box>
+          </Box>
+          <Box paddingX="5" width={props.data.size.width / 2}>
+            <Box paddingBottom="5">
+              <Box>Selected Apps/States</Box>
+              <Box wordBreak="break-all">{JSON.stringify(stateController)}</Box>
+            </Box>
+            <form onSubmit={changeSelectedStates}>
+              <Box>Update States</Box>
+              <Textarea value={text} onChange={(e) => setText(e.target.value)} />
+              <Button my="2" type="submit">Submit Changes</Button>
+            </form>
+            <Box display="flex" flexDirection="column">
+              <hr />
+              <Button onClick={restoreOriginalStates} width="fit-content" my="2">
+                Reset to Original Values
+              </Button>
+              <Button
+                width="fit-content"
+                onClick={() => {
+                  setStateController([]);
                 }}
               >
-                <div>
-                  {app._id} - {app.data.type}
-                </div>
-                <hr />
-                <Box>
-                  {Object.entries(app.data.state).map((state) => {
-                    return (
-                      <Button
-                        onClick={() => {
-                          setStateController([...stateController, { _id: app._id, stateKey: state[0], stateValue: state[1] }]);
-                        }}
-                      >
-                        {state[0]}: {JSON.stringify(state[1])}
-                      </Button>
-                    );
-                  })}
-                </Box>
-              </Box>
-            );
-          })}
+                Reset State Array
+              </Button>
+            </Box>
+          </Box>
         </Box>
-        <Box marginY="10">
-          <Box>Selected Apps/States</Box>
-          <Box>{JSON.stringify(stateController)}</Box>
-        </Box>
-        <form onSubmit={changeSelectedStates}>
-          <Textarea value={text} onChange={(e) => setText(e.target.value)} />
-          <Button type="submit">Submit Changes</Button>
-        </form>
-        <Button onClick={restoreOriginalStates}>Reset to Original Values</Button>
-        <Button
-          onClick={() => {
-            setStateController([]);
-          }}
-        >
-          Reset State Array
-        </Button>
       </Box>
     </AppWindow>
   );
