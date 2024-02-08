@@ -23,31 +23,21 @@ import './styling.css';
 
 function AppComponent(props: App): JSX.Element {
   const s = props.data.state as AppState;
+  const update = useAppStore((state) => state.update);
   const updateState = useAppStore((state) => state.updateState);
-  const fetchboardApps = useAppStore((state) => state.fetchBoardApps);
+  const apps = useAppStore((state) => state.apps);
   const updateStateBatch = useAppStore((state) => state.updateStateBatch);
   const originalData = useRef<any[]>([]);
+  const originalAppCoordinates = useRef<{ x: number; y: number; z: number }>({ x: 0, y: 0, z: 0 });
 
-  const [apps, setApps] = useState<App[]>([]);
+  // const [apps, setApps] = useState<App[]>([]);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [stateController, setStateController] = useState<any>([]);
   const [text, setText] = useState('');
 
-  useEffect(() => {
-    const getApps = async () => {
-      const res = await fetchboardApps(props.data.boardId);
-      console.log(res);
-      setApps(res as App[]);
-      const states = res?.map((app) => {
-        return {
-          id: app._id,
-          state: app.data.state,
-        };
-      });
-      console.log('states', states);
-    };
-    getApps();
-  }, []);
+  // useEffect(() => {
+  //   console.log("apps", apps);
+  // }, [apps.length]);
 
   const handleSubmit = (e: React.SyntheticEvent) => {
     e.preventDefault();
@@ -56,13 +46,13 @@ function AppComponent(props: App): JSX.Element {
     console.log('formdata', formData);
     console.log('submit');
   };
-
+  console.log('props', props);
   const changeSelectedStates = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const ps = [];
     for (const app of stateController) {
-      originalData.current.push({ id: app._id, updates: {[`${app.stateKey}`]: app.stateValue }});
-      console.log("originalData", originalData.current);
+      originalData.current.push({ id: app._id, updates: { [`${app.stateKey}`]: app.stateValue } });
+      console.log('originalData', originalData.current);
       ps.push({ id: app._id, updates: { [`${app.stateKey}`]: text } });
     }
     updateStateBatch(ps);
@@ -71,8 +61,23 @@ function AppComponent(props: App): JSX.Element {
   const restoreOriginalStates = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     updateStateBatch(originalData.current);
-  }
+  };
 
+  const moveNextToSAGELINK = (app: App) => {
+    console.log("I'm in the moveNextToSAGELINK function");
+    // console.log(app.data.position);
+    originalAppCoordinates.current = app.data.position;
+    console.log('originalAppCoordinates', originalAppCoordinates.current);
+    console.log('app', app);
+    update(app._id, { position: { x: props.data.position.x + props.data.size.width + 2, y: props.data.position.y, z: props.data.position.z } });
+  };
+
+  const restoreOriginalCoordinates = (app: App) => {
+    console.log("I'm in the restoreOriginalCoordinates function");
+    update(app._id, { position: originalAppCoordinates.current });
+  };
+
+  console.log('apps', apps);
   return (
     <AppWindow app={props}>
       <Box padding="3">
@@ -101,7 +106,18 @@ function AppComponent(props: App): JSX.Element {
         <Box display="flex" flexDirection="column" flexWrap="wrap">
           {apps.map((app) => {
             return (
-              <Box key={app._id} border="1px solid" padding="2" marginY="2">
+              <Box
+                key={app._id}
+                border="1px solid"
+                padding="2"
+                marginY="2"
+                onMouseEnter={() => {
+                  moveNextToSAGELINK(app);
+                }}
+                onMouseLeave={() => {
+                  restoreOriginalCoordinates(app);
+                }}
+              >
                 <div>
                   {app._id} - {app.data.type}
                 </div>
@@ -111,7 +127,6 @@ function AppComponent(props: App): JSX.Element {
                     return (
                       <Button
                         onClick={() => {
-                          console.log('stateController', stateController);
                           setStateController([...stateController, { _id: app._id, stateKey: state[0], stateValue: state[1] }]);
                         }}
                       >
@@ -132,7 +147,14 @@ function AppComponent(props: App): JSX.Element {
           <Textarea value={text} onChange={(e) => setText(e.target.value)} />
           <Button type="submit">Submit Changes</Button>
         </form>
-          <Button onClick={restoreOriginalStates}>Reset to Original Values</Button>
+        <Button onClick={restoreOriginalStates}>Reset to Original Values</Button>
+        <Button
+          onClick={() => {
+            setStateController([]);
+          }}
+        >
+          Reset State Array
+        </Button>
       </Box>
     </AppWindow>
   );
